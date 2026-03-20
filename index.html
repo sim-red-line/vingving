@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>클릭하면 늘어나는 고양이</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: black;
+            cursor: pointer; /* 클릭 가능하다는 표시 */
+        }
+
+        .container {
+            display: grid;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            outline: 1px solid rgba(255, 255, 255, 0.1); /* 얇은 구분선 */
+        }
+
+        /* 중앙 안내 문구 */
+        #instruction {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            pointer-events: none; /* 문구 클릭 방지 */
+            font-family: sans-serif;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="instruction">화면을 클릭하면 고양이가 늘어납니다!</div>
+    <div class="container" id="videoGrid"></div>
+
+    <script>
+        const container = document.getElementById('videoGrid');
+        const videoSrc = 'cat.mp4';
+        let count = 1; // 초기 행/열 개수
+
+        function updateGrid() {
+            // 1. 기존 비디오 모두 삭제
+            container.innerHTML = '';
+            
+            // 2. 그리드 스타일 업데이트 (count x count)
+            container.style.gridTemplateColumns = `repeat(${count}, 1fr)`;
+            container.style.gridTemplateRows = `repeat(${count}, 1fr)`;
+
+            // 3. 비디오 태그 생성 및 추가 (총 count * count 개)
+            const totalVideos = count * count;
+            for (let i = 0; i < totalVideos; i++) {
+                const video = document.createElement('video');
+                video.src = videoSrc;
+                video.autoplay = true;
+                video.loop = true;
+                video.muted = true;
+                video.playsInline = true;
+                container.appendChild(video);
+            }
+        }
+
+        // 화면 클릭 시마다 count 증가 후 그리드 업데이트
+        window.addEventListener('click', () => {
+            count++;
+            updateGrid();
+            document.getElementById('instruction').innerText = `현재 격자: ${count} x ${count}`;
+        });
+
+        // 초기 실행
+        updateGrid();
+    </script>
+</body>
+</html>
