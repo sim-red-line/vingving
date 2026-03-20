@@ -2,77 +2,82 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat Army</title>
     <style>
         body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            overflow: hidden; background-color: red; cursor: pointer;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: black;
+            cursor: pointer;
         }
-        .container { display: grid; width: 100vw; height: 100vh; }
-        video { width: 100%; height: 100%; object-fit: cover; }
-        #info {
-            position: absolute; top: 20px; left: 20px; color: yellow;
-            background: black; padding: 15px; font-weight: bold;
-            font-family: 'Courier New', monospace; z-index: 10;
-            border: 3px solid yellow;
+
+        .container {
+            display: grid;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* 경계선마저 없애려면 아래 줄을 주석 처리하거나 0으로 바꾸세요 */
+            outline: none; 
         }
     </style>
 </head>
 <body>
 
-    <div id="info"><br>⚠️ 스피커 주의 ⚠️</div>
     <div class="container" id="videoGrid"></div>
 
     <script>
         const container = document.getElementById('videoGrid');
-        const info = document.getElementById('info');
         const videoSrc = 'cat.mp4';
         
         let count = 1;
-        let speed = 1.0;
-        let audioCtx = null;
+        let videoSpeed = 1.0;
+        let isStarted = false;
 
         function updateGrid() {
             container.innerHTML = '';
             container.style.gridTemplateColumns = `repeat(${count}, 1fr)`;
             container.style.gridTemplateRows = `repeat(${count}, 1fr)`;
 
-            for (let i = 0; i < count * count; i++) {
+            const total = count * count;
+            for (let i = 0; i < total; i++) {
                 const video = document.createElement('video');
                 video.src = videoSrc;
                 video.autoplay = true;
                 video.loop = true;
                 video.playsInline = true;
-                video.playbackRate = speed;
                 
-                // 오디오 컨텍스트가 생성되었다면 볼륨 연결
-                if (audioCtx) {
-                    const source = audioCtx.createMediaElementSource(video);
-                    const gainNode = audioCtx.createGain();
-                    
-                    // 볼륨 증폭 수치 (2.0 = 200%, 필요시 더 높이세요)
-                    gainNode.gain.value = 2.0; 
-                    
-                    source.connect(gainNode);
-                    gainNode.connect(audioCtx.destination);
-                }
+                // 영상 배속 설정
+                video.playbackRate = videoSpeed;
+                
+                // 소리 톤(피치) 유지 설정
+                if ('preservesPitch' in video) video.preservesPitch = true;
+                else if ('webkitPreservesPitch' in video) video.webkitPreservesPitch = true;
+
+                // 첫 클릭 전까지는 음소거(브라우저 정책)
+                video.muted = !isStarted;
 
                 container.appendChild(video);
             }
-
-            info.innerHTML = `격자: ${count}x${count}<br>속도: ${speed.toFixed(1)}x<br>볼륨: 증폭 활성화`;
         }
 
         window.addEventListener('click', () => {
-            // 첫 클릭 시 오디오 컨텍스트 초기화 (브라우저 정책 우회)
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
+            if (!isStarted) isStarted = true;
             
             count++;
-            speed += 0.5; // 배속도 더 화끈하게 증가
+            videoSpeed += 0.5;
             updateGrid();
         });
 
+        // 초기 화면 (1x1)
         updateGrid();
     </script>
 </body>
