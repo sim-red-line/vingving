@@ -2,52 +2,24 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>폭주하는 고양이 격자</title>
     <style>
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: black;
-            cursor: pointer;
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: red; cursor: pointer;
         }
-
-        .container {
-            display: grid;
-            width: 100vw;
-            height: 100vh;
-        }
-
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border: 0.1px solid rgba(255, 255, 255, 0.05);
-        }
-
+        .container { display: grid; width: 100vw; height: 100vh; }
+        video { width: 100%; height: 100%; object-fit: cover; }
         #info {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: #00ff00; /* 터미널 느낌의 초록색 */
-            background: rgba(0, 0, 0, 0.7);
-            padding: 15px;
-            font-family: 'Courier New', Courier, monospace;
-            z-index: 10;
-            border-radius: 5px;
-            pointer-events: none;
-            line-height: 1.5;
+            position: absolute; top: 20px; left: 20px; color: yellow;
+            background: black; padding: 15px; font-weight: bold;
+            font-family: 'Courier New', monospace; z-index: 10;
+            border: 3px solid yellow;
         }
     </style>
 </head>
 <body>
 
-    <div id="info">
-        격자 크기: 1 x 1<br>
-        재생 속도: 1.0x
-    </div>
+    <div id="info"><br>⚠️ 스피커 주의 ⚠️</div>
     <div class="container" id="videoGrid"></div>
 
     <script>
@@ -55,41 +27,52 @@
         const info = document.getElementById('info');
         const videoSrc = 'cat.mp4';
         
-        let count = 1;      // 격자 수 (n x n)
-        let speed = 1.0;    // 초기 속도
+        let count = 1;
+        let speed = 1.0;
+        let audioCtx = null;
 
         function updateGrid() {
             container.innerHTML = '';
             container.style.gridTemplateColumns = `repeat(${count}, 1fr)`;
             container.style.gridTemplateRows = `repeat(${count}, 1fr)`;
 
-            const totalVideos = count * count;
-            
-            for (let i = 0; i < totalVideos; i++) {
+            for (let i = 0; i < count * count; i++) {
                 const video = document.createElement('video');
                 video.src = videoSrc;
                 video.autoplay = true;
                 video.loop = true;
-                video.muted = true;
                 video.playsInline = true;
-                
-                // 핵심: 비디오 재생 속도 설정
                 video.playbackRate = speed;
                 
+                // 오디오 컨텍스트가 생성되었다면 볼륨 연결
+                if (audioCtx) {
+                    const source = audioCtx.createMediaElementSource(video);
+                    const gainNode = audioCtx.createGain();
+                    
+                    // 볼륨 증폭 수치 (2.0 = 200%, 필요시 더 높이세요)
+                    gainNode.gain.value = 2.0; 
+                    
+                    source.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                }
+
                 container.appendChild(video);
             }
 
-            // 정보창 업데이트
-            info.innerHTML = `격자 크기: ${count} x ${count}<br>재생 속도: ${speed.toFixed(1)}x`;
+            info.innerHTML = `격자: ${count}x${count}<br>속도: ${speed.toFixed(1)}x<br>볼륨: 증폭 활성화`;
         }
 
         window.addEventListener('click', () => {
-            count++;        // 격자 1단계 증가
-            speed += 0.5;   // 속도 0.2배 증가
+            // 첫 클릭 시 오디오 컨텍스트 초기화 (브라우저 정책 우회)
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            count++;
+            speed += 0.5; // 배속도 더 화끈하게 증가
             updateGrid();
         });
 
-        // 시작
         updateGrid();
     </script>
 </body>
