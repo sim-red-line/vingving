@@ -35,19 +35,33 @@
     <div class="container" id="videoGrid">
         </div>
 
-    <script>
-        const container = document.getElementById('videoGrid');
-        const videoSrc = 'cat.mp4'; // 영상 파일 이름
+   const container = document.getElementById('videoGrid');
+const videoSrc = 'cat.mp4'; // 영상 파일 이름
+const videos = []; // 비디오 객체들을 담을 배열
 
-        for (let i = 0; i < 64; i++) {
-            const video = document.createElement('video');
-            video.src = videoSrc;
-            video.autoplay = true;
-            video.loop = true;
-            video.muted = true; // 브라우저 정책상 자동재생을 위해 음소거 필수
-            video.playsInline = true;
-            container.appendChild(video);
-        }
-    </script>
+for (let i = 0; i < 64; i++) {
+    const video = document.createElement('video');
+    video.src = videoSrc;
+    video.autoplay = true;
+    video.loop = true;
+    video.muted = true; // 처음엔 음소거 상태로 시작 (자동재생 필수 조건)
+    video.playsInline = true;
+    container.appendChild(video);
+    videos.push(video);
+}
+
+// 화면을 클릭하면 소리가 켜지도록 설정
+window.addEventListener('click', () => {
+    // 첫 번째 영상의 소리만 켭니다 (전부 켜면 소리가 64배로 커짐)
+    videos[0].muted = false;
+    videos[0].volume = 0.5; // 볼륨 조절 (0.0 ~ 1.0)
+    
+    // 만약 모든 영상의 소리를 다 켜고 싶다면 아래 주석을 해제하세요
+    /*
+    videos.forEach(v => v.muted = false);
+    */
+    
+    console.log("Sound unmuted!");
+}, { once: true }); // 딱 한 번만 실행되도록 설정
 </body>
 </html>
