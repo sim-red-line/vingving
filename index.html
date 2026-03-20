@@ -3,31 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cat Army</title>
+    <title>Cat Army - Pure Sound</title>
     <style>
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: black;
-            cursor: pointer;
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: black; cursor: pointer;
         }
-
-        .container {
-            display: grid;
-            width: 100vw;
-            height: 100vh;
-        }
-
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            /* 경계선마저 없애려면 아래 줄을 주석 처리하거나 0으로 바꾸세요 */
-            outline: none; 
-        }
+        .container { display: grid; width: 100vw; height: 100vh; }
+        video { width: 100%; height: 100%; object-fit: cover; border: none; }
     </style>
 </head>
 <body>
@@ -40,6 +23,7 @@
         
         let count = 1;
         let videoSpeed = 1.0;
+        let audioCtx = null;
         let isStarted = false;
 
         function updateGrid() {
@@ -55,15 +39,32 @@
                 video.loop = true;
                 video.playsInline = true;
                 
-                // 영상 배속 설정
+                // 1. 영상은 클릭할 때마다 빨라짐
                 video.playbackRate = videoSpeed;
-                
-                // 소리 톤(피치) 유지 설정
-                if ('preservesPitch' in video) video.preservesPitch = true;
-                else if ('webkitPreservesPitch' in video) video.webkitPreservesPitch = true;
 
-                // 첫 클릭 전까지는 음소거(브라우저 정책)
-                video.muted = !isStarted;
+                // 2. 소리 설정
+                if (isStarted) {
+                    video.muted = false;
+                    
+                    // Web Audio API로 소리 배속 방지 및 증폭
+                    if (!audioCtx) {
+                        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                    
+                    const source = audioCtx.createMediaElementSource(video);
+                    const gainNode = audioCtx.createGain();
+                    
+                    // 영상의 속도 변화와 상관없이 오디오 출력 속도를 보정 (브라우저 지원 시)
+                    video.preservesPitch = true; 
+                    
+                    // 볼륨 증폭 (기본 3배, 필요시 조절)
+                    gainNode.gain.value = 3.0; 
+                    
+                    source.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                } else {
+                    video.muted = true;
+                }
 
                 container.appendChild(video);
             }
@@ -73,12 +74,10 @@
             if (!isStarted) isStarted = true;
             
             count++;
-            count++;
-            videoSpeed += 0.3;
+            videoSpeed += 0.5; // 영상 속도만 증가
             updateGrid();
         });
 
-        // 초기 화면 (1x1)
         updateGrid();
     </script>
 </body>
