@@ -2,69 +2,52 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>소리나는 고양이 군단</title>
+    <title>64분할 고양이</title>
     <style>
         body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            overflow: hidden; background-color: black; cursor: pointer;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* 스크롤 방지 */
+            background-color: black;
         }
-        .container { display: grid; width: 100vw; height: 100vh; }
-        video { width: 100%; height: 100%; object-fit: cover; }
-        #info {
-            position: absolute; top: 20px; left: 20px; color: #ff00ff;
-            background: rgba(0, 0, 0, 0.8); padding: 15px;
-            font-family: 'Courier New', monospace; z-index: 10;
+
+        .container {
+            display: grid;
+            /* 8열 8행으로 정확히 나눕니다 */
+            grid-template-columns: repeat(8, 12.5vw);
+            grid-template-rows: repeat(8, 12.5vh);
+            width: 100vw;
+            height: 100vh;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 영상을 칸에 꽉 채움 */
+            border: 0.5px solid #222; /* 칸 구분선 (선택사항) */
         }
     </style>
 </head>
 <body>
 
-    <div id="info">화면을 클릭하면 소리와 함께 증식합니다!</div>
-    <div class="container" id="videoGrid"></div>
+    <div class="container" id="videoGrid">
+        </div>
 
     <script>
         const container = document.getElementById('videoGrid');
-        const info = document.getElementById('info');
-        const videoSrc = 'cat.mp4';
-        
-        let count = 1;
-        let speed = 1.0;
-        let isMuted = true; // 초기 상태는 음소거
+        const videoSrc = 'cat.mp4'; // 영상 파일 이름
 
-        function updateGrid() {
-            container.innerHTML = '';
-            container.style.gridTemplateColumns = `repeat(${count}, 1fr)`;
-            container.style.gridTemplateRows = `repeat(${count}, 1fr)`;
-
-            for (let i = 0; i < count * count; i++) {
-                const video = document.createElement('video');
-                video.src = videoSrc;
-                video.autoplay = true;
-                video.loop = true;
-                video.playsInline = true;
-                
-                // 첫 클릭 이후부터는 음소거를 해제합니다.
-                video.muted = isMuted; 
-                video.playbackRate = speed;
-                
-                container.appendChild(video);
-            }
-
-            info.innerHTML = `격자: ${count}x${count}<br>속도: ${speed.toFixed(1)}x<br>소리: ${isMuted ? 'OFF' : 'ON'}`;
+        for (let i = 0; i < 64; i++) {
+            const video = document.createElement('video');
+            video.src = videoSrc;
+            video.autoplay = true;
+            video.loop = true;
+            video.muted = true; // 브라우저 정책상 자동재생을 위해 음소거 필수
+            video.playsInline = true;
+            container.appendChild(video);
         }
-
-        window.addEventListener('click', () => {
-            // 첫 클릭 시 음소거 해제 승인
-            if (isMuted) isMuted = false;
-            
-            count++;
-            count++;
-            count++;
-            speed += 0.2;
-            updateGrid();
-        });
-
-        updateGrid();
     </script>
 </body>
 </html>
