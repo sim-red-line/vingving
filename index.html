@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>클릭하면 늘어나는 고양이</title>
+    <title>폭주하는 고양이 격자</title>
     <style>
         body, html {
             margin: 0;
@@ -11,7 +11,7 @@
             height: 100%;
             overflow: hidden;
             background-color: black;
-            cursor: pointer; /* 클릭 가능하다는 표시 */
+            cursor: pointer;
         }
 
         .container {
@@ -24,43 +24,47 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            outline: 1px solid rgba(255, 255, 255, 0.1); /* 얇은 구분선 */
+            border: 0.1px solid rgba(255, 255, 255, 0.05);
         }
 
-        /* 중앙 안내 문구 */
-        #instruction {
+        #info {
             position: absolute;
             top: 20px;
             left: 20px;
-            color: white;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            pointer-events: none; /* 문구 클릭 방지 */
-            font-family: sans-serif;
+            color: #00ff00; /* 터미널 느낌의 초록색 */
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            font-family: 'Courier New', Courier, monospace;
             z-index: 10;
+            border-radius: 5px;
+            pointer-events: none;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
 
-    <div id="instruction">화면을 클릭하면 고양이가 늘어납니다!</div>
+    <div id="info">
+        격자 크기: 1 x 1<br>
+        재생 속도: 1.0x
+    </div>
     <div class="container" id="videoGrid"></div>
 
     <script>
         const container = document.getElementById('videoGrid');
+        const info = document.getElementById('info');
         const videoSrc = 'cat.mp4';
-        let count = 1; // 초기 행/열 개수
+        
+        let count = 1;      // 격자 수 (n x n)
+        let speed = 1.0;    // 초기 속도
 
         function updateGrid() {
-            // 1. 기존 비디오 모두 삭제
             container.innerHTML = '';
-            
-            // 2. 그리드 스타일 업데이트 (count x count)
             container.style.gridTemplateColumns = `repeat(${count}, 1fr)`;
             container.style.gridTemplateRows = `repeat(${count}, 1fr)`;
 
-            // 3. 비디오 태그 생성 및 추가 (총 count * count 개)
             const totalVideos = count * count;
+            
             for (let i = 0; i < totalVideos; i++) {
                 const video = document.createElement('video');
                 video.src = videoSrc;
@@ -68,18 +72,24 @@
                 video.loop = true;
                 video.muted = true;
                 video.playsInline = true;
+                
+                // 핵심: 비디오 재생 속도 설정
+                video.playbackRate = speed;
+                
                 container.appendChild(video);
             }
+
+            // 정보창 업데이트
+            info.innerHTML = `격자 크기: ${count} x ${count}<br>재생 속도: ${speed.toFixed(1)}x`;
         }
 
-        // 화면 클릭 시마다 count 증가 후 그리드 업데이트
         window.addEventListener('click', () => {
-            count++;
+            count++;        // 격자 1단계 증가
+            speed += 0.5;   // 속도 0.2배 증가
             updateGrid();
-            document.getElementById('instruction').innerText = `현재 격자: ${count} x ${count}`;
         });
 
-        // 초기 실행
+        // 시작
         updateGrid();
     </script>
 </body>
